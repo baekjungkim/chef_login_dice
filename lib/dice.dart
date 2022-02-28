@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -12,6 +13,14 @@ class Dice extends StatefulWidget {
 class _DiceState extends State<Dice> {
   int leftDice = 1;
   int rightDice = 2;
+
+  late Timer _timer;
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +64,22 @@ class _DiceState extends State<Dice> {
                 size: 50.0,
               ),
               onPressed: () {
-                setState(() {
-                  leftDice = Random().nextInt(6) + 1;
-                  rightDice = Random().nextInt(6) + 1;
-                });
-                showToast('Left Dice: $leftDice, Right Dice: $rightDice');
+                int stopTimeCounter = 0;
+                if (!_timer.isActive) {
+                  _timer = Timer.periodic(Duration(milliseconds: 300), (timer) {
+                    stopTimeCounter++;
+                    setState(() {
+                      leftDice = Random().nextInt(6) + 1;
+                      rightDice = Random().nextInt(6) + 1;
+                    });
+                    if (stopTimeCounter == 10) {
+                      timer.cancel();
+                      showToast('Left Dice: $leftDice, Right Dice: $rightDice');
+                    }
+                  });
+                } else {
+                  showToast('Choosing the dice, please wait');
+                }
               },
             ),
           ],
